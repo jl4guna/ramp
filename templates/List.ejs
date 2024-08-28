@@ -1,0 +1,58 @@
+import { useLoaderData, Link } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { db } from "~/utils/db.server";
+
+export const loader = async () => {
+  const items = await db.<%= model.name.toLowerCase() %>.findMany({
+    include: {
+      <% model.fields.filter(f => f.relation).forEach(field => { %>
+        <%= field.name %>: true,
+      <% }); %>
+    }
+  });
+  return json({ items });
+};
+
+export default function <%= model.name %>ListView() {
+  const { items } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1><%= model.name %> List</h1>
+      <Link to="create">Create New <%= model.name %></Link>
+      <table>
+        <thead>
+          <tr>
+            <% model.fields.forEach(field => { %>
+              <th><%= field.name %><%= field.relation ? ` (${field.relation.type})` : '' %></th>
+            <% }); %>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(item => (
+            <tr key={item.id}>
+              <% model.fields.forEach(field => { %>
+                <td>
+                  <% if (field.relation) { %>
+                    <% if (field.relation.type === 'oneToOne' || field.relation.type === 'manyToOne') { %>
+                      {item.<%= field.name %>?.id}
+                    <% } else { %>
+                      {item.<%= field.name %>?.length} items
+                    <% } %>
+                  <% } else { %>
+                    {item.<%= field.name %>}
+                  <% } %>
+                </td>
+              <% }); %>
+              <td>
+                <Link to={`${item.id}/edit`}>Edit</Link>
+                <Link to={`${item.id}/delete`}>Delete</Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

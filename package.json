@@ -1,0 +1,30 @@
+{
+  "name": "ramp",
+  "version": "1.0.0",
+  "description": "CLI to generate a admin panel for Remix.run",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "ramp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "remix",
+    "admin",
+    "cli"
+  ],
+  "author": "Jhonatan Laguna",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ejs": "^3.1.10"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/node": "^22.5.1",
+    "typescript": "^5.5.4"
+  }
+}
