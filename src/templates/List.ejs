@@ -1,0 +1,96 @@
+import { Link, useLoaderData } from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/server-runtime";
+import { json } from "@remix-run/server-runtime";
+import type { <%= modelName %> as <%= modelName %>Type } from "~/models/dashboard/<%= modelName %>.server";
+import { get<%= modelName %>ListItems } from "~/models/dashboard/<%= modelName %>.server";
+
+export async function loader({ request }: LoaderArgs) {
+<% if (addFilter) { %>
+  const searchParams = new URL(request.url).searchParams as any;
+  const { filter } = Object.fromEntries(searchParams.entries());
+
+  const <%= pluralize(camelCase(modelName)) %> = await get<%= modelName %>ListItems({ filter })
+
+  return json({ filter, <%= pluralize(camelCase(modelName)) %> });
+<% } else { %>
+  const <%= pluralize(camelCase(modelName)) %> = await get<%= modelName %>ListItems()
+
+  return json({ <%= pluralize(camelCase(modelName)) %> });
+<% } %>
+} 
+
+export default function <%= modelName %>() {
+<% if (addFilter) { %>
+  const { filter, <%= pluralize(camelCase(modelName)) %> } = useLoaderData<{ filter?: string, <%= pluralize(camelCase(modelName)) %>: <%= modelName %>Type[] }>();
+<% } else { %>
+  const { <%= pluralize(camelCase(modelName)) %> } = useLoaderData<{ <%= pluralize(camelCase(modelName)) %>: <%= modelName %>Type[] }>();
+<% } %>
+
+  return (
+  <div className="sm:px-6 lg:px-8">
+    <div className="flex items-center justify-between">
+      <div className="sm:flex-auto">
+        <h1 className="text-xl font-semibold text-gray-900"><%= modelName %></h1>
+        <p className="mt-2 text-sm text-gray-700">
+          A list of all the <%= pluralize(camelCase(modelName)) %>.
+        </p>
+      </div>
+      <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <Link to="/dashboard/<%= modelName %>/create">
+          <button type="button"
+            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">
+            Add <%= modelName %>
+          </button>
+        </Link>
+      </div>
+    </div>
+    <div className="mt-8 flow-root overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <table className="w-full text-left">
+          <thead className="bg-white">
+            <tr>
+              <th scope="col" className="relative isolate py-3.5 pr-3 text-left text-sm font-semibold text-gray-900">
+                ID
+                <div className="absolute inset-y-0 right-full -z-10 w-screen border-b border-b-gray-200" />
+                <div className="absolute inset-y-0 left-0 -z-10 w-screen border-b border-b-gray-200" />
+              </th>
+              <% properties.forEach(function(property) { %>
+              <th scope="col" className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">
+                <%= capitalize(property.name) %>
+              </th>
+              <% }); %>
+              <th scope="col" className="relative py-3.5 pl-3">
+                <span className="sr-only">Edit</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            { <%= pluralize(camelCase(modelName)) %>.map((<%= camelCase(modelName) %>) => (
+            <tr key={ <%= camelCase(modelName) %>.id }>
+              <td className="relative py-4 pr-3 text-sm font-medium text-gray-900">
+                { <%= camelCase(modelName) %>.id }
+                <div className="absolute bottom-0 right-full h-px w-screen bg-gray-100" />
+                <div className="absolute bottom-0 left-0 h-px w-screen bg-gray-100" />
+              </td>
+              <% properties.forEach(function(property) { %>
+              <td className="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
+                { <%= camelCase(modelName) %>.<%= property.name %> }
+              </td>
+              <% }); %>
+              <td className="px-3 py-4 text-sm text-gray-500">
+                { <%= camelCase(modelName) %>.createdAt}
+              </td>
+              <td className="relative py-4 pl-3 text-right text-sm font-medium">
+                <Link to={`/dashboard/<%= modelName %>/${ <%= camelCase(modelName) %>.id}`} className="text-indigo-600 hover:text-indigo-900">
+                Edit
+                </Link>
+              </td>
+            </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  );
+}

@@ -6,15 +6,15 @@ RAMP is a Command Line Interface tool designed to automatically generate and man
 
 - Automatic generation of CRUD views based on your Prisma schema
 - Smart view updates: only regenerates views that have changed
-- Customizable EJS templates for view generation
+- Customizable Handlebars templates for view generation
 - Built-in migration system to track and update generated views
 
-## Installation - Not yet available
+## Installation
 
 To install RAMP globally, run:
 
 ```bash
-npm install -g ramp
+npm install -g remix-admin-panel
 ```
 
 ## Usage
@@ -36,7 +36,7 @@ This command will:
 
 - `-s, --schema <path>`: Specify the path to your Prisma schema file (optional)
 - `-o, --output <directory>`: Specify the output directory for generated views (optional)
-- `-t, --templates <directory>`: Specify a custom directory for EJS templates (optional)
+- `-t, --templates <directory>`: Specify a custom directory for Handlebars templates (optional)
 
 Example with options:
 
@@ -46,12 +46,61 @@ ramp generate -s ./prisma/schema.prisma -o ./app/routes/admin -t ./my-templates
 
 ## Customizing Templates
 
-RAMP uses EJS templates to generate views. You can customize these templates to fit your project's needs:
+RAMP uses Handlebars templates to generate views. You can customize these templates to fit your project's needs:
 
 1. Create a new directory for your custom templates
 2. Copy the default templates from the RAMP package to your new directory
 3. Modify the templates as needed
 4. Use the `-t` option to specify your custom templates directory when running RAMP
+
+Each template file should have a `.hbs` extension and use Handlebars syntax. The main context object passed to the templates is `model`, which contains the Prisma model information.
+
+Example of a custom List template:
+
+```handlebars
+import { useLoaderData, Link } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { db } from "~/utils/db.server";
+
+export const loader = async () => {
+  const items = await db.{{model.name.toLowerCase()}}.findMany();
+  return json({ items });
+};
+
+export default function {{model.name}}ListView() {
+  const { items } = useLoaderData<typeof loader>();
+
+  return (
+    <div>
+      <h1>{{model.name}} List</h1>
+      <Link to="create">Create New {{model.name}}</Link>
+      <table>
+        <thead>
+          <tr>
+            {{#each model.fields}}
+              <th>{{this.name}}</th>
+            {{/each}}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(item => (
+            <tr key={item.id}>
+              {{#each model.fields}}
+                <td>{item.{{this.name}}}</td>
+              {{/each}}
+              <td>
+                <Link to={`${item.id}/edit`}>Edit</Link>
+                <Link to={`${item.id}/delete`}>Delete</Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
 
 ## Migration System
 

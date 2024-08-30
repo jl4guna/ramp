@@ -1,5 +1,5 @@
 {
-  "name": "ramp",
+  "name": "remix-admin-panel",
   "version": "1.0.0",
   "description": "CLI to generate a admin panel for Remix.run",
   "main": "dist/index.js",
@@ -9,6 +9,8 @@
   },
   "scripts": {
     "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -20,10 +22,10 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^12.1.0",
-    "ejs": "^3.1.10"
+    "handlebars": "^4.7.7"
   },
   "devDependencies": {
-    "@types/ejs": "^3.1.5",
+    "@types/handlebars": "^4.1.0",
     "@types/node": "^22.5.1",
     "typescript": "^5.5.4"
   }

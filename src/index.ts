@@ -3,7 +3,7 @@
 import { program } from 'commander';
 import fs from 'fs/promises';
 import path from 'path';
-import ejs from 'ejs';
+import Handlebars from 'handlebars';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 
@@ -172,9 +172,10 @@ async function generateViews(
     const viewTypes = ['List', 'Create', 'Update', 'Delete', 'Search'];
 
     for (const viewType of viewTypes) {
-      const templatePath = path.join(templatesDir, `${viewType}.ejs`);
-      const template = await fs.readFile(templatePath, 'utf-8');
-      const renderedView = ejs.render(template, { model });
+      const templatePath = path.join(templatesDir, `${viewType}.hbs`);
+      const templateContent = await fs.readFile(templatePath, 'utf-8');
+      const template = Handlebars.compile(templateContent);
+      const renderedView = template({ model });
 
       const modelOutputDir = path.join(
         outputDir,
@@ -198,9 +199,9 @@ async function generateViews(
 
       if (!existingView || existingView.hash !== newHash) {
         await fs.writeFile(viewPath, renderedView);
-        console.log(`View ${model.name}${viewType} updated.`);
+        console.log(`Vista ${model.name}${viewType} actualizada.`);
       } else {
-        console.log(`View ${model.name}${viewType} unchanged.`);
+        console.log(`Vista ${model.name}${viewType} sin cambios.`);
       }
 
       newManifest.generatedViews.push({
@@ -213,7 +214,6 @@ async function generateViews(
 
   return newManifest;
 }
-
 async function loadManifest(outputDir: string): Promise<MigrationManifest> {
   const manifestPath = path.join(outputDir, '.ramp-manifest.json');
   try {
